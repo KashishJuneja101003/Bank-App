@@ -1,28 +1,39 @@
 package com.bankapp.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.bankapp.dto.AccountResponseDto;
 import com.bankapp.dto.CreateAccountRequestDto;
+import com.bankapp.dto.UpdateAccountRequestDto;
 import com.bankapp.dto.UserListResponseDto;
 import com.bankapp.entity.Account;
+import com.bankapp.entity.Address;
 import com.bankapp.exception.AccountNotFoundException;
+import com.bankapp.exception.UpdateRequestBodyValidationException;
 import com.bankapp.repository.AccountRepository;
-import com.bankapp.util.AccountNumberGenerator;
+import com.bankapp.util.AccountBuilder;
+import com.bankapp.util.AccountResponseDtoBuilder;
+import com.bankapp.util.NewAccountBuilder;
 
 @Service
 public class AccountServiceImpl implements AccountService {
-	private AccountRepository accountRepository;
-	@Value("${bank.ifsc}")
-	private String bankIfsc;
 
-	public AccountServiceImpl(AccountRepository accountRepository) {
-		super();
+	private final AccountBuilder accountBuilder;
+	private AccountRepository accountRepository;
+	private NewAccountBuilder newAccountBuilder;
+
+	private AccountResponseDtoBuilder builder;
+
+	public AccountServiceImpl(AccountRepository accountRepository, NewAccountBuilder newAccountBuilder,
+			AccountResponseDtoBuilder builder, AccountBuilder accountBuilder) {
 		this.accountRepository = accountRepository;
+		this.newAccountBuilder = newAccountBuilder;
+		this.builder = builder;
+		this.accountBuilder = accountBuilder;
 	}
 
 	@Override
@@ -33,18 +44,15 @@ public class AccountServiceImpl implements AccountService {
 					"Bank Account for account number: '" + accountNumber + "' is not found.");
 		}
 
-		return new AccountResponseDto(bankAccount.getAccountNumber(), bankAccount.getAccountOwnerName(),
-				bankAccount.getAccountBalance(), bankIfsc);
+		return builder.toDto(bankAccount);
 	}
 
 	@Override
 	public UserListResponseDto getAllUsers() {
-		List<AccountResponseDto> allUsers = accountRepository.findAll().stream()
-				.map(a -> AccountResponseDto.builder().accountNumber(a.getAccountNumber())
-						.balance(a.getAccountBalance()).ownerName(a.getAccountOwnerName()).build())
+		List<AccountResponseDto> allUsers = accountRepository.findAll().stream().map(a -> builder.toDto(a))
 				.collect(Collectors.toList());
-		
-		if (allUsers.size() == 0) {
+
+		if (allUsers.isEmpty()) {
 			throw new AccountNotFoundException("There are no users in your bank");
 		}
 		return new UserListResponseDto(allUsers);
@@ -52,25 +60,46 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public AccountResponseDto addUser(CreateAccountRequestDto bankAccountUser) {
-//		boolean userExists = accountRepository.findById(bankAccountUser.getId()).isPresent();
-//		
-//		if(userExists) {
-//			throw new AccountAlreadyExistsException("Account already exists with account number: " 
-//		            + bankAccountUser.getAccountNumber());
-//		}
 
-		Account account = new Account();
-		account.setAccountNumber(AccountNumberGenerator.generate13DigitAccountNumber());
-		account.setAccountOwnerName(bankAccountUser.getOwnerName());
-		account.setAccountBalance(bankAccountUser.getBalance());
-
+		Account account = newAccountBuilder.toAccount(bankAccountUser);
 		accountRepository.save(account);
 
-		AccountResponseDto accountResponseDto = AccountResponseDto.builder().accountNumber(account.getAccountNumber())
-				.balance(account.getAccountBalance()).ownerName(account.getAccountOwnerName()).ifscCode(bankIfsc)
-				.build();
+		return builder.toDto(account);
+	}
 
-		return accountResponseDto;
+	@Override
+	public String deleteUserByAccountNumber(String accountNumber) {
+		accountRepository.delete(getUserByAccountNumber(accountNumber).getAccountNumber());
+
+		return "Account with number " + accountNumber + " deleted successfully!";
+	}
+
+	@Override
+	public String updateUserByAccountNumber(String accountNumber, UpdateAccountRequestDto dto) {
+		AccountResponseDto accountResponseDto = getUserByAccountNumber(accountNumber);
+		Account account = accountBuilder.updateAccount(accountResponseDto);
+
+		String ownerName = dto.getOwnerName();
+		String phoneNumber = dto.getPhoneNumber();
+		String email = dto.getEmail();
+		Address address = dto.getAddress();
+
+		if (ownerName == null && phoneNumber == null && email == null && address == null) {
+			throw new UpdateRequestBodyValidationException(
+					"Empty Update Request. You can update name, phone number, email and address.");
+		}
+
+		if (ownerName == null)
+			ownerName = account.getAccountOwnerName();
+		if (phoneNumber == null)
+			phoneNumber = account.getPhoneNumber();
+		if (email == null)
+			email = account.getEmail();
+
+		accountRepository.updateByAccountNumber(accountNumber, ownerName, phoneNumber, email, LocalDateTime.now());
+		
+
+		return "Account with number " + accountNumber + " updated successfully!";
 	}
 
 }
