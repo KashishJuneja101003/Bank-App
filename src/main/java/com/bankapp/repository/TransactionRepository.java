@@ -1,10 +1,15 @@
 package com.bankapp.repository;
 
-import java.math.BigDecimal;
+import java.util.List;
 
-import com.bankapp.dto.AccountResponseDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface TransactionRepository {
-	public void depositBalance(AccountResponseDto bankAccountUser, BigDecimal amount);
-	public void withdrawBalance(AccountResponseDto bankAccountUser, BigDecimal amount);
+import com.bankapp.entity.Account;
+import com.bankapp.entity.Transaction;
+
+@Repository
+public interface TransactionRepository extends JpaRepository<Transaction, String> {
+	
+	public List<Transaction> findByAccount(Account account);
 }

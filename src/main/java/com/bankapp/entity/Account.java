@@ -3,6 +3,7 @@ package com.bankapp.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.bankapp.enums.AccountStatus;
 import com.bankapp.enums.AccountType;
@@ -16,6 +17,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
@@ -84,4 +86,7 @@ public class Account {
 	
 	@Embedded
 	private Address address;
+	
+	@OneToMany(mappedBy = "account")
+	private List<Transaction> transactions;
 }

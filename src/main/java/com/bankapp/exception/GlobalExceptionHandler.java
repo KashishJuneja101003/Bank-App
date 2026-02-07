@@ -80,4 +80,35 @@ public class GlobalExceptionHandler {
 	            .body(apiError);
 	}
 
+	
+	@ExceptionHandler(InsufficientBalanceException.class)
+	public ResponseEntity<ApiError> handleInsufficientBalanceException(InsufficientBalanceException e){
+
+	    ApiError apiError = ApiError.builder()
+	            .status(HttpStatus.BAD_REQUEST.value())
+	            .error(HttpStatus.BAD_REQUEST.name())
+	            .message(e.getMessage())
+	            .localDateTime(LocalDateTime.now())
+	            .build();
+
+	    return ResponseEntity
+	            .status(HttpStatus.BAD_REQUEST)
+	            .body(apiError);
+	}
+	
+	@ExceptionHandler(TransactionNotFoundException.class)
+	public ResponseEntity<ApiError> handleTransactionNotFoundException(TransactionNotFoundException e){
+
+	    ApiError apiError = ApiError.builder()
+	            .status(HttpStatus.BAD_REQUEST.value())
+	            .error(HttpStatus.BAD_REQUEST.name())
+	            .message(e.getMessage())
+	            .localDateTime(LocalDateTime.now())
+	            .build();
+
+	    return ResponseEntity
+	            .status(HttpStatus.BAD_REQUEST)
+	            .body(apiError);
+	}
+
 }
