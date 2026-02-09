@@ -1,22 +1,43 @@
 package com.bankapp.entity;
 
+import com.bankapp.enums.Role;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@MappedSuperclass  
-public abstract class Employee {
+@ToString
+@Builder
+@Table(name = "employees")
+@Entity
+public class Employee {
 
-    @Id
-    private String employeeId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer employeeId;
 
-    private String name;
-    private String email;
+	@Column(nullable = false)
+	private String name;
+
+	@Column(nullable = false)
+	private String email;
+	
+	@Enumerated
+	private Role role;
+	
+	private Integer managerId;
 }

@@ -14,7 +14,6 @@ import com.bankapp.enums.TransactionApprovalStatus;
 import com.bankapp.enums.TransactionType;
 import com.bankapp.exception.AccountNotFoundException;
 import com.bankapp.exception.InsufficientBalanceException;
-import com.bankapp.exception.TransactionNotFoundException;
 import com.bankapp.repository.AccountRepository;
 import com.bankapp.repository.TransactionRepository;
 import com.bankapp.util.TransactionIdGenerator;
