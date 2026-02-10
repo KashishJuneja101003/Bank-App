@@ -2,6 +2,7 @@ package com.bankapp.util;
 
 import org.springframework.stereotype.Component;
 
+import com.bankapp.dto.CreateEmployeeRequestDto;
 import com.bankapp.dto.EmployeeRequestDto;
 import com.bankapp.dto.EmployeeResponseDto;
 import com.bankapp.entity.Employee;
@@ -14,6 +15,16 @@ public class EmployeeDtoBuilder {
 				.email(dto.getEmail())
 				.managerId(dto.getManagerId())
 				.role(dto.getRole())
+				.build();
+	}
+	
+	public Employee fromRequestDtoForNewEmployee(CreateEmployeeRequestDto dto) {
+		return Employee.builder()
+				.name(dto.getName())
+				.email(dto.getEmail())
+				.managerId(dto.getManagerId())
+				.role(dto.getRole())
+				.password(dto.getPassword())
 				.build();
 	}
 	

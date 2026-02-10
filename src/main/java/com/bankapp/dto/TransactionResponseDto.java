@@ -23,7 +23,7 @@ public class TransactionResponseDto {
 	private TransactionType transactionType;
 	private BigDecimal amount;
 	private LocalDateTime timestamp;
-	private String performedById;	// Clerk ID
+	private Integer performedById;	// Clerk ID
 	private TransactionApprovalStatus transactionApprovalStatus;
-	private String approvedBy;	// Manager ID, optional
+	private Integer approvedBy;	// Manager ID, optional
 }

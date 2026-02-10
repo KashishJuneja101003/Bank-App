@@ -16,6 +16,7 @@ import com.bankapp.exception.AccountNotFoundException;
 import com.bankapp.exception.InsufficientBalanceException;
 import com.bankapp.repository.AccountRepository;
 import com.bankapp.repository.TransactionRepository;
+import com.bankapp.util.SecurityUtil;
 import com.bankapp.util.TransactionIdGenerator;
 
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class TransactionServiceImpl implements TransactionService {
 	AccountRepository accountRepository;
 	AccountServiceImpl accountServiceImpl;
 	TransactionRepository transactionRepository;
+	SecurityUtil securityUtil;
 
 	@Override
 	public String depositBalance(String accountNumber, BigDecimal amount) {
@@ -43,7 +45,8 @@ public class TransactionServiceImpl implements TransactionService {
 		tx.setTransactionType(TransactionType.DEPOSIT);
 		tx.setAmount(amount);
 		tx.setTimestamp(LocalDateTime.now());
-		tx.setTransactionApprovalStatus(TransactionApprovalStatus.SUCCESS);
+		tx.setTransactionApprovalStatus(TransactionApprovalStatus.APPROVED);
+		tx.setPerformedById(securityUtil.getLoggedInUserId());
 
 		accountRepository.save(account);
 		transactionRepository.save(tx);
@@ -61,7 +64,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 		BigDecimal balance = account.getAccountBalance();
 		if (balance.compareTo(amount) < 0) {
-		    throw new InsufficientBalanceException("You have insufficient balance.");
+			throw new InsufficientBalanceException("You have insufficient balance.");
 		}
 
 		account.setAccountBalance(balance.subtract(amount));
@@ -69,15 +72,28 @@ public class TransactionServiceImpl implements TransactionService {
 		Transaction tx = new Transaction();
 		tx.setTransactionId(TransactionIdGenerator.generate());
 		tx.setAccount(account);
-		tx.setTransactionType(TransactionType.DEPOSIT);
+		tx.setTransactionType(TransactionType.WITHDRAW);
 		tx.setAmount(amount);
 		tx.setTimestamp(LocalDateTime.now());
-		tx.setTransactionApprovalStatus(TransactionApprovalStatus.SUCCESS);
+		tx.setPerformedById(securityUtil.getLoggedInUserId());
 
-		accountRepository.save(account);
-		transactionRepository.save(tx);
+		if (amount.compareTo(BigDecimal.valueOf(200_000)) >= 0) {
+			tx.setTransactionApprovalStatus(TransactionApprovalStatus.PENDING);
+			tx.setApprovedBy(null); // pending manager approval
+			transactionRepository.save(tx);
 
-		return amount + " withdrew successfully from account: " + accountNumber;
+			return "Transaction of " + amount + " requires manager approval.";
+		} else {
+			// Auto-approved for amounts < 2L
+			tx.setTransactionApprovalStatus(TransactionApprovalStatus.APPROVED);
+			tx.setApprovedBy(null); // no manager
+			account.setAccountBalance(balance.subtract(amount));
+
+			accountRepository.save(account);
+			transactionRepository.save(tx);
+
+			return amount + " withdrew successfully from account: " + accountNumber;
+		}
 	}
 
 	@Override
@@ -87,12 +103,12 @@ public class TransactionServiceImpl implements TransactionService {
 		if (fromAccount == null) {
 			throw new AccountNotFoundException("User with account number: " + fromAccountNumber + " does not exists.");
 		}
-		
+
 		BigDecimal balance = fromAccount.getAccountBalance();
 		if (balance.compareTo(amount) < 0) {
-		    throw new InsufficientBalanceException("You have insufficient balance.");
+			throw new InsufficientBalanceException("You have insufficient balance.");
 		}
-		
+
 		Account toAccount = accountRepository.findByAccountNumber(toAccountNumber);
 
 		if (toAccount == null) {
@@ -105,22 +121,24 @@ public class TransactionServiceImpl implements TransactionService {
 		Transaction tx1 = new Transaction();
 		tx1.setTransactionId(TransactionIdGenerator.generate());
 		tx1.setAccount(fromAccount);
-		tx1.setTransactionType(TransactionType.DEPOSIT);
+		tx1.setTransactionType(TransactionType.WITHDRAW);
 		tx1.setAmount(amount);
 		tx1.setTimestamp(LocalDateTime.now());
-		tx1.setTransactionApprovalStatus(TransactionApprovalStatus.SUCCESS);
+		tx1.setTransactionApprovalStatus(TransactionApprovalStatus.APPROVED);
+		tx1.setPerformedById(securityUtil.getLoggedInUserId());
 
 		accountRepository.save(fromAccount);
 		transactionRepository.save(tx1);
-		
+
 		Transaction tx2 = new Transaction();
 		tx2.setTransactionId(TransactionIdGenerator.generate());
 		tx2.setAccount(toAccount);
 		tx2.setTransactionType(TransactionType.DEPOSIT);
 		tx2.setAmount(amount);
 		tx2.setTimestamp(LocalDateTime.now());
-		tx2.setTransactionApprovalStatus(TransactionApprovalStatus.SUCCESS);
-		
+		tx2.setTransactionApprovalStatus(TransactionApprovalStatus.APPROVED);
+		tx2.setPerformedById(securityUtil.getLoggedInUserId());
+
 		accountRepository.save(toAccount);
 		transactionRepository.save(tx2);
 
@@ -129,44 +147,35 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<TransactionResponseDto> getTransactionsByAccount(String accountNumber) {
-	    Account account = accountRepository.findByAccountNumber(accountNumber);
-	    if (account == null) {
-	        throw new AccountNotFoundException("Account not found: " + accountNumber);
-	    }
-	    
-	    List<Transaction> transactions = transactionRepository.findByAccount(account);
-	    
-	    List<TransactionResponseDto> transactionDtos = transactions.stream()
-	            .map(tx -> TransactionResponseDto.builder()
-	                    .transactionId(tx.getTransactionId())
-	                    .accountNumber(tx.getAccount().getAccountNumber())
-	                    .transactionType(tx.getTransactionType())
-	                    .amount(tx.getAmount())
-	                    .timestamp(tx.getTimestamp())
-	                    .transactionApprovalStatus(tx.getTransactionApprovalStatus())
-	                    .performedById(tx.getPerformedById())
-	                    .approvedBy(tx.getApprovedBy())
-	                    .build())
-	            .toList();
+		Account account = accountRepository.findByAccountNumber(accountNumber);
+		if (account == null) {
+			throw new AccountNotFoundException("Account not found: " + accountNumber);
+		}
 
-	        return transactionDtos;
+		List<Transaction> transactions = transactionRepository.findByAccount(account);
+
+		List<TransactionResponseDto> transactionDtos = transactions.stream()
+				.map(tx -> TransactionResponseDto.builder().transactionId(tx.getTransactionId())
+						.accountNumber(tx.getAccount().getAccountNumber()).transactionType(tx.getTransactionType())
+						.amount(tx.getAmount()).timestamp(tx.getTimestamp())
+						.transactionApprovalStatus(tx.getTransactionApprovalStatus())
+						.performedById(tx.getPerformedById()).approvedBy(tx.getApprovedBy()).build())
+				.toList();
+
+		return transactionDtos;
 	}
 
 	@Override
 	public TransactionResponseDto getByTransactionId(String txId) {
 		Optional<Transaction> tx = transactionRepository.findById(txId);
-		
-		TransactionResponseDto txResponseDto = TransactionResponseDto.builder()
-				.transactionId(txId)
-				.accountNumber(tx.get().getAccount().getAccountNumber())
-				.transactionType(tx.get().getTransactionType())
-				.amount(tx.get().getAmount())
-				.timestamp(tx.get().getTimestamp())
+
+		TransactionResponseDto txResponseDto = TransactionResponseDto.builder().transactionId(txId)
+				.accountNumber(tx.get().getAccount().getAccountNumber()).transactionType(tx.get().getTransactionType())
+				.amount(tx.get().getAmount()).timestamp(tx.get().getTimestamp())
 				.performedById(tx.get().getPerformedById())
-				.transactionApprovalStatus(tx.get().getTransactionApprovalStatus())
-				.approvedBy(tx.get().getApprovedBy())
+				.transactionApprovalStatus(tx.get().getTransactionApprovalStatus()).approvedBy(tx.get().getApprovedBy())
 				.build();
-		
+
 		return txResponseDto;
 	}
 }

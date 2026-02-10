@@ -7,9 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import com.bankapp.entity.Account;
 import com.bankapp.entity.Transaction;
+import com.bankapp.enums.TransactionApprovalStatus;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, String> {
 	
 	public List<Transaction> findByAccount(Account account);
+	
+	List<Transaction> findByTransactionApprovalStatus(TransactionApprovalStatus status);
 }

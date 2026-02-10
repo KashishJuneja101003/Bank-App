@@ -8,6 +8,7 @@ import java.util.List;
 import com.bankapp.enums.AccountStatus;
 import com.bankapp.enums.AccountType;
 import com.bankapp.enums.Gender;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -88,5 +89,6 @@ public class Account {
 	private Address address;
 	
 	@OneToMany(mappedBy = "account")
+	@JsonManagedReference
 	private List<Transaction> transactions;
 }

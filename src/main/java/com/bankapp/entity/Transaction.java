@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.bankapp.enums.TransactionApprovalStatus;
 import com.bankapp.enums.TransactionType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +34,7 @@ public class Transaction {
 	
 	@ManyToOne
 	@JoinColumn(name = "account_number", nullable = false)
+	@JsonBackReference
 	private Account account;
 	
 	@Column(nullable = false)
@@ -45,10 +47,10 @@ public class Transaction {
 	private LocalDateTime timestamp;
 	
 //	@Column(nullable = false)
-	private String performedById;	// Clerk ID
+	private Integer performedById;	// Clerk ID
 	
 	@Column(nullable = false)
 	private TransactionApprovalStatus transactionApprovalStatus;
 	
-	private String approvedBy;	// Manager ID, optional
+	private Integer approvedBy;	// Manager ID, optional
 }

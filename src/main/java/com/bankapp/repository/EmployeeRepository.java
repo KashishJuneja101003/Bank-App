@@ -6,8 +6,9 @@ import org.springframework.stereotype.Repository;
 import com.bankapp.entity.Employee;
 
 
+
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
-
+	public Employee findByEmail(String email);
 }
