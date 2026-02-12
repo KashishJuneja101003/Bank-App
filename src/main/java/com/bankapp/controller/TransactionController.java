@@ -2,6 +2,7 @@ package com.bankapp.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class TransactionController {
 
 	
 	@PostMapping("/deposit/{accountNumber}")
-	public ResponseEntity<String> deposit(@PathVariable String accountNumber, @RequestBody BigDecimal amount){
+	public ResponseEntity<?> deposit(@PathVariable String accountNumber, @RequestBody BigDecimal amount){
 		String message = transactionServiceImpl.depositBalance(accountNumber, amount);
 		return ResponseEntity
 				.status(HttpStatus.OK)
@@ -33,11 +34,14 @@ public class TransactionController {
 	}
 	
 	@PostMapping("/withdraw/{accountNumber}")
-	public ResponseEntity<String> withdraw(@PathVariable String accountNumber, @RequestBody BigDecimal amount){
+	public ResponseEntity<?> withdraw(@PathVariable String accountNumber, @RequestBody BigDecimal amount){
 		String message = transactionServiceImpl.withdrawBalance(accountNumber, amount);
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(message);
+		boolean pending = message.contains("requires manager approval");
+		
+		return ResponseEntity.ok(Map.of(
+		        "message", message,
+		        "pendingApproval", pending
+		    ));
 	}
 	
 	@PostMapping("/transfer/{fromAccountNumber}/{toAccountNumber}")

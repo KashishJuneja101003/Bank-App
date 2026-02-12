@@ -7,6 +7,7 @@ import com.bankapp.entity.Address;
 import com.bankapp.enums.AccountStatus;
 import com.bankapp.enums.AccountType;
 import com.bankapp.enums.Gender;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -36,6 +37,7 @@ public class CreateAccountRequestDto {
     @NotNull(message = "Gender is mandatory")
     private Gender ownerGender;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "Date of birth is mandatory")
     private LocalDate dateOfBirth;
 

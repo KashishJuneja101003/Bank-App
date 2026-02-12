@@ -15,6 +15,7 @@ import com.bankapp.dto.AccountResponseDto;
 import com.bankapp.dto.CreateAccountRequestDto;
 import com.bankapp.dto.UpdateAccountRequestDto;
 import com.bankapp.dto.UserListResponseDto;
+import com.bankapp.enums.AccountStatus;
 import com.bankapp.service.AccountService;
 
 import jakarta.validation.Valid;
@@ -31,6 +32,21 @@ public class AccountController {
 	public AccountResponseDto getUserByAccountNumber(@PathVariable String accountNumber) {
 		return bankAppAccountService.getUserByAccountNumber(accountNumber);
 	}
+	
+	@GetMapping("/{email}")
+	public AccountResponseDto getUserByEmail(@PathVariable String email) {
+		return bankAppAccountService.getUserByAccountNumber(email);
+	}
+	
+	@GetMapping("/{panNo}")
+	public AccountResponseDto getUserByPanNumber(@PathVariable String panNo) {
+		return bankAppAccountService.getUserByAccountNumber(panNo);
+	}
+	
+	@GetMapping("/{aadharNum}")
+	public AccountResponseDto getUserByAadharNumber(@PathVariable String aadharNum) {
+		return bankAppAccountService.getUserByAccountNumber(aadharNum);
+	}
 
 	@PostMapping
 	public AccountResponseDto addUser(@Valid @RequestBody CreateAccountRequestDto newUser) {
@@ -41,6 +57,13 @@ public class AccountController {
 	public UserListResponseDto getAllUsers() {
 		return bankAppAccountService.getAllUsers();
 	}
+	
+	@GetMapping("/users/{type}")
+	public UserListResponseDto getAllUsersByAccountStatus(@PathVariable String type ) {
+		AccountStatus accountStatus = AccountStatus.valueOf(type.toUpperCase());
+		return bankAppAccountService.getAllUsersByAccountStatus(accountStatus);
+	}
+	
 
 	@DeleteMapping("/delete/{accountNumber}")
 	public ResponseEntity<String> deleteUserByAccountNumber(@PathVariable String accountNumber) {

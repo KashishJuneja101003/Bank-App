@@ -53,7 +53,7 @@ public class Account {
 	private String ifscCode;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(name = "account_status", nullable = false)
 	private AccountStatus accountStatus;
 
 	@Enumerated(EnumType.STRING)
@@ -87,6 +87,8 @@ public class Account {
 	
 	@Embedded
 	private Address address;
+	
+	@Column(nullable = false)
 	
 	@OneToMany(mappedBy = "account")
 	@JsonManagedReference

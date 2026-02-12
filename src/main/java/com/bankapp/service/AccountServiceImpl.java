@@ -12,6 +12,7 @@ import com.bankapp.dto.UpdateAccountRequestDto;
 import com.bankapp.dto.UserListResponseDto;
 import com.bankapp.entity.Account;
 import com.bankapp.entity.Address;
+import com.bankapp.enums.AccountStatus;
 import com.bankapp.exception.AccountNotFoundException;
 import com.bankapp.exception.UpdateRequestBodyValidationException;
 import com.bankapp.repository.AccountRepository;
@@ -46,6 +47,39 @@ public class AccountServiceImpl implements AccountService {
 
 		return builder.toDto(bankAccount);
 	}
+	
+	@Override
+	public AccountResponseDto getUserByEmail(String email) {
+		Account bankAccount = accountRepository.findByEmail(email);
+		if (bankAccount == null) {
+			throw new AccountNotFoundException(
+					"Bank Account for account number: '" + email + "' is not found.");
+		}
+
+		return builder.toDto(bankAccount);
+	}
+
+	@Override
+	public AccountResponseDto getUserByPanNumber(String panNo) {
+		Account bankAccount = accountRepository.findByPanNumber(panNo);
+		if (bankAccount == null) {
+			throw new AccountNotFoundException(
+					"Bank Account for account number: '" + panNo + "' is not found.");
+		}
+
+		return builder.toDto(bankAccount);
+	}
+
+	@Override
+	public AccountResponseDto getUserByAadharNumber(String aadharNum) {
+		Account bankAccount = accountRepository.findByAadharNumber(aadharNum);
+		if (bankAccount == null) {
+			throw new AccountNotFoundException(
+					"Bank Account for account number: '" + aadharNum + "' is not found.");
+		}
+
+		return builder.toDto(bankAccount);
+	}
 
 	@Override
 	public UserListResponseDto getAllUsers() {
@@ -59,6 +93,18 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
+	public UserListResponseDto getAllUsersByAccountStatus(AccountStatus accountStatus) {
+		List<AccountResponseDto> allUsers = accountRepository.findByAccountStatus(accountStatus).stream().map(a -> builder.toDto(a))
+				.collect(Collectors.toList());
+
+		if (allUsers.isEmpty()) {
+			throw new AccountNotFoundException("There are no users in your bank");
+		}
+		return new UserListResponseDto(allUsers);
+	}
+
+	
+	@Override
 	public AccountResponseDto addUser(CreateAccountRequestDto bankAccountUser) {
 
 		Account account = newAccountBuilder.toAccount(bankAccountUser);
@@ -69,7 +115,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public String deleteUserByAccountNumber(String accountNumber) {
-		accountRepository.delete(getUserByAccountNumber(accountNumber).getAccountNumber());
+		accountRepository.delete(getUserByAccountNumber(accountNumber).getAccountNumber(), AccountStatus.FROZEN);
 
 		return "Account with number " + accountNumber + " deleted successfully!";
 	}
@@ -83,8 +129,9 @@ public class AccountServiceImpl implements AccountService {
 		String phoneNumber = dto.getPhoneNumber();
 		String email = dto.getEmail();
 		Address address = dto.getAddress();
+		String status = dto.getAccountStatus().name();
 
-		if (ownerName == null && phoneNumber == null && email == null && address == null) {
+		if (ownerName == null && phoneNumber == null && email == null && address == null && status == null) {
 			throw new UpdateRequestBodyValidationException(
 					"Empty Update Request. You can update name, phone number, email and address.");
 		}
@@ -95,11 +142,17 @@ public class AccountServiceImpl implements AccountService {
 			phoneNumber = account.getPhoneNumber();
 		if (email == null)
 			email = account.getEmail();
+		if (address == null)
+			address = account.getAddress();
+		if (status == null)
+			status = account.getAccountStatus().name();
 
-		accountRepository.updateByAccountNumber(accountNumber, ownerName, phoneNumber, email, LocalDateTime.now());
+		accountRepository.updateByAccountNumber(accountNumber, ownerName, phoneNumber, email, status, LocalDateTime.now());
 		
 
 		return "Account with number " + accountNumber + " updated successfully!";
 	}
+
+	
 
 }

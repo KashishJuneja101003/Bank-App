@@ -9,8 +9,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bankapp.entity.Account;
+import com.bankapp.enums.AccountStatus;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
+
 
 
 @Repository
@@ -20,17 +23,28 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 	
 	@Transactional
 	@Modifying
-	@Query("DELETE FROM Account a WHERE a.accountNumber = :accountNumber")
-	void delete(@Param("accountNumber") String accountNumber);	
+	@Query("UPDATE Account a SET a.accountStatus = :status WHERE a.accountNumber = :accountNumber")
+	void delete(@Param("accountNumber") String accountNumber, @Param("status") AccountStatus status);	
 	
-	@Transactional
 	@Modifying
-	@Query(value = "UPDATE Bank_Accounts SET account_owner_name = :ownerName, phone_number = :phoneNumber, email = :email, last_updation_date = :lastUpdationDate WHERE account_number = :accountNumber", nativeQuery = true)
+	@Transactional
+	@Query(value = "UPDATE bank_accounts SET account_owner_name = :ownerName, phone_number = :phoneNumber, email = :email, account_status = :status, last_updation_date = :lastUpdationDate WHERE account_number = :accountNumber", nativeQuery = true)
 	int updateByAccountNumber(@Param("accountNumber") String accountNumber,
-	                        @Param("ownerName") String ownerName,
-	                        @Param("phoneNumber") String phoneNumber,
-	                        @Param("email") String email,
-	                        @Param("lastUpdationDate") LocalDateTime lastUpdationDate
-			);
+	                          @Param("ownerName") String ownerName,
+	                          @Param("phoneNumber") String phoneNumber,
+	                          @Param("email") String email,
+	                          @Param("status") String accountStatus,
+	                          @Param("lastUpdationDate") LocalDateTime lastUpdationDate
+	);
+
+	
+	
+	List<Account> findByAccountStatus(AccountStatus accountStatus);
+	
+	Account findByAadharNumber(String aadharNumber);
+	
+	Account findByEmail(String email);
+	
+	Account findByPanNumber(String panNumber);
 
 }
