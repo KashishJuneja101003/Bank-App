@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ import lombok.AllArgsConstructor;
 public class TransactionController {
 	private TransactionServiceImpl transactionServiceImpl;
 
-	
+	@PreAuthorize("hasRole('CLERK')")
 	@PostMapping("/deposit/{accountNumber}")
 	public ResponseEntity<?> deposit(@PathVariable String accountNumber, @RequestBody BigDecimal amount){
 		String message = transactionServiceImpl.depositBalance(accountNumber, amount);
@@ -33,6 +34,7 @@ public class TransactionController {
 				.body(message);
 	}
 	
+	@PreAuthorize("hasRole('CLERK')")
 	@PostMapping("/withdraw/{accountNumber}")
 	public ResponseEntity<?> withdraw(@PathVariable String accountNumber, @RequestBody BigDecimal amount){
 		String message = transactionServiceImpl.withdrawBalance(accountNumber, amount);
@@ -44,6 +46,7 @@ public class TransactionController {
 		    ));
 	}
 	
+	@PreAuthorize("hasRole('CLERK')")
 	@PostMapping("/transfer/{fromAccountNumber}/{toAccountNumber}")
 	public ResponseEntity<String> transfer(@PathVariable String fromAccountNumber, @PathVariable String toAccountNumber, @RequestBody BigDecimal amount){
 		String message = transactionServiceImpl.transferBalance(fromAccountNumber, toAccountNumber, amount);
@@ -52,6 +55,7 @@ public class TransactionController {
 				.body(message);
 	}
 	
+	@PreAuthorize("hasRole('CLERK')")
 	@GetMapping("/account/{accountNumber}")
 	public ResponseEntity<List<TransactionResponseDto>> getTransactionsByAccount(@PathVariable String accountNumber){
 	    List<TransactionResponseDto> transactions = transactionServiceImpl.getTransactionsByAccount(accountNumber);

@@ -54,6 +54,7 @@ public class TransactionServiceImpl implements TransactionService {
 		return amount + " deposited successfully in account: " + accountNumber;
 	}
 
+
 	@Override
 	public String withdrawBalance(String accountNumber, BigDecimal amount) {
 		Account account = accountRepository.findByAccountNumber(accountNumber);
@@ -92,9 +93,10 @@ public class TransactionServiceImpl implements TransactionService {
 			accountRepository.save(account);
 			transactionRepository.save(tx);
 
-			return amount + " withdrew successfully from account: " + accountNumber;
+			return "Rs. " + amount + " withdrew successfully from account: " + accountNumber;
 		}
 	}
+
 
 	@Override
 	public String transferBalance(String fromAccountNumber, String toAccountNumber, BigDecimal amount) {
@@ -145,6 +147,7 @@ public class TransactionServiceImpl implements TransactionService {
 		return amount + " is successfully from account: " + fromAccountNumber + " to account: " + toAccountNumber;
 	}
 
+
 	@Override
 	public List<TransactionResponseDto> getTransactionsByAccount(String accountNumber) {
 		Account account = accountRepository.findByAccountNumber(accountNumber);
@@ -152,7 +155,7 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new AccountNotFoundException("Account not found: " + accountNumber);
 		}
 
-		List<Transaction> transactions = transactionRepository.findByAccount(account);
+		List<Transaction> transactions = transactionRepository.findByAccountOrderByTimestampDesc(account);
 
 		List<TransactionResponseDto> transactionDtos = transactions.stream()
 				.map(tx -> TransactionResponseDto.builder().transactionId(tx.getTransactionId())
@@ -165,6 +168,8 @@ public class TransactionServiceImpl implements TransactionService {
 		return transactionDtos;
 	}
 
+
+	
 	@Override
 	public TransactionResponseDto getByTransactionId(String txId) {
 		Optional<Transaction> tx = transactionRepository.findById(txId);

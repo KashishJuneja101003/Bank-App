@@ -34,7 +34,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "bank_accounts", uniqueConstraints = @UniqueConstraint(columnNames = "accountNumber"))
+@Table(name = "bank_accounts", uniqueConstraints = {
+		@UniqueConstraint(name = "uk_account_number", columnNames = "accountNumber"),
+		@UniqueConstraint(name = "uk_email", columnNames = "email"),
+		@UniqueConstraint(name = "uk_pan", columnNames = "panNumber"),
+		@UniqueConstraint(name = "uk_aadhar", columnNames = "aadharNumber") })
+
+
 public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,10 +48,10 @@ public class Account {
 
 	@Column(nullable = false, unique = true, length = 13)
 	private String accountNumber;
-	
+
 	@Column(nullable = false)
 	private String accountOwnerName;
-		
+
 	@Column(nullable = false)
 	private BigDecimal accountBalance;
 
@@ -59,10 +65,10 @@ public class Account {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private AccountType accountType;
-	
+
 	@Column(nullable = false)
 	private LocalDate creationDate;
-	
+
 	@Column(nullable = false)
 	private LocalDateTime lastUpdationDate;
 
@@ -78,18 +84,18 @@ public class Account {
 
 	@Column(nullable = false, unique = true)
 	private String email;
-	
+
 	@Column(nullable = false, unique = true)
 	private String panNumber;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false, unique = true, length=12)
 	private String aadharNumber;
-	
+
 	@Embedded
 	private Address address;
-	
+
 	@Column(nullable = false)
-	
+
 	@OneToMany(mappedBy = "account")
 	@JsonManagedReference
 	private List<Transaction> transactions;

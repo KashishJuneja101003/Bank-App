@@ -26,8 +26,10 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/accounts")
 public class AccountController {
 
+
 	private AccountService bankAppAccountService;
 
+    
 	@GetMapping("/{accountNumber}")
 	public AccountResponseDto getUserByAccountNumber(@PathVariable String accountNumber) {
 		return bankAppAccountService.getUserByAccountNumber(accountNumber);
@@ -50,6 +52,10 @@ public class AccountController {
 
 	@PostMapping
 	public AccountResponseDto addUser(@Valid @RequestBody CreateAccountRequestDto newUser) {
+		System.out.println(newUser.getAadharNumber());
+		System.out.println(newUser.getAadharNumber().length());
+		System.out.println(newUser.getAadharNumber().getClass());
+		
 		return bankAppAccountService.addUser(newUser);
 	}
 

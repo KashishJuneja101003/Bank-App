@@ -13,7 +13,7 @@ public class NewAccountBuilder {
 	private AccountBuilder accountBuilder;
 	public Account toAccount(CreateAccountRequestDto bankAccountUser) {
 		Account account = accountBuilder.toAccount(bankAccountUser);
-		account.setAadharNumber(AccountNumberGenerator.generate13DigitAccountNumber());
+		account.setAccountNumber(AccountNumberGenerator.generate13DigitAccountNumber());
 		return account;
 	}
 }

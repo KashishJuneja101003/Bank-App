@@ -27,29 +27,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		System.out.println("🔥 JWT FILTER HIT: " + request.getRequestURI());
+		System.out.println("JWT FILTER HIT: " + request.getRequestURI());
 
 		String path = request.getRequestURI();
 		String method = request.getMethod();
 
-		System.out.println("🔥 JWT FILTER HIT: " + method + " " + path);
+		System.out.println("JWT FILTER HIT: " + method + " " + path);
 
-		// 🔥 STEP 1: SKIP AUTH APIS
+		// SKIP AUTH APIS
 		if (path.contains("/auth/login")) {
-			System.out.println("✅ JWT SKIPPED FOR LOGIN");
+			System.out.println("JWT SKIPPED FOR LOGIN");
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		// ✅ Skip employee creation
+		// Skip employee creation
 		if (path.startsWith("/employees")) {
-			System.out.println("✅ JWT SKIPPED FOR EMPLOYEE CRUD");
+			System.out.println("JWT SKIPPED FOR EMPLOYEE CRUD");
 			filterChain.doFilter(request, response);
 			return;
 		}
 		
 
-		// 🔥 STEP 2: CHECK TOKEN ONLY FOR PROTECTED APIS
+		// CHECK TOKEN ONLY FOR PROTECTED APIS
 		String authHeader = request.getHeader("Authorization");
 		System.out.println(authHeader);
 
@@ -60,22 +60,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 		try {
 			String token = authHeader.substring(7);
-			System.out.println("🧪 TOKEN: " + token);
+			System.out.println("TOKEN: " + token);
 
 			String email = jwtUtil.extractEmail(token);
 			String role = jwtUtil.extractRole(token);
 
-			System.out.println("🟢 JWT EMAIL: " + email);
-			System.out.println("🟢 JWT ROLE: " + role);
+			System.out.println("JWT EMAIL: " + email);
+			System.out.println("JWT ROLE: " + role);
 
 			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null,
 					List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 
-			System.out.println("✅ AUTH SET SUCCESSFULLY");
+			System.out.println("AUTH SET SUCCESSFULLY");
 		} catch (Exception e) {
-			System.out.println("❌ JWT ERROR – REQUEST BLOCKED");
+			System.out.println("JWT ERROR – REQUEST BLOCKED");
 			e.printStackTrace();
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;

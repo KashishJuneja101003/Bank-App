@@ -1,9 +1,12 @@
 package com.bankapp.exception;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,117 +15,126 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	
+
 	@ExceptionHandler(AccountNotFoundException.class)
-	public ResponseEntity<ApiError> handleAccountNotFound(AccountNotFoundException e){
-		ApiError apiError = ApiError.builder()
-				.localDateTime(LocalDateTime.now())
-				.status(HttpStatus.NOT_FOUND.value())
-				.message(e.getMessage())
-				.error(HttpStatus.NOT_FOUND.name())
-				.build();
-		
-		return ResponseEntity
-				.status(HttpStatus.NOT_FOUND)
-				.body(apiError);
+	public ResponseEntity<ApiError> handleAccountNotFound(AccountNotFoundException e) {
+		ApiError apiError = ApiError.builder().localDateTime(LocalDateTime.now()).status(HttpStatus.NOT_FOUND.value())
+				.message(e.getMessage()).error(HttpStatus.NOT_FOUND.name()).build();
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
 	}
-	
+
 	@ExceptionHandler(AccountAlreadyExistsException.class)
-	public ResponseEntity<ApiError> handleAccountAlreadyExists(AccountAlreadyExistsException e){
-		
-		ApiError apiError = ApiError.builder()
-				.status(HttpStatus.CONFLICT.value())
-				.message(e.getMessage())
-				.error(HttpStatus.CONFLICT.name())
-				.build();
-		
-		return ResponseEntity
-				.status(HttpStatus.CONFLICT)
-				.body(apiError);
+	public ResponseEntity<ApiError> handleAccountAlreadyExists(AccountAlreadyExistsException e) {
+
+		ApiError apiError = ApiError.builder().status(HttpStatus.CONFLICT.value()).message(e.getMessage())
+				.error(HttpStatus.CONFLICT.name()).build();
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
 	}
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException e){
+	public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException e) {
 
-	    Map<String, String> fieldErrors = e.getBindingResult()
-	            .getFieldErrors()
-	            .stream()
-	            .collect(Collectors.toMap(
-	                    error -> error.getField(),
-	                    error -> error.getDefaultMessage()
-	            ));
+		Map<String, String> fieldErrors = e.getBindingResult().getFieldErrors().stream()
+				.collect(Collectors.toMap(error -> error.getField(), error -> error.getDefaultMessage()));
 
-	    ApiError apiError = ApiError.builder()
-	            .status(HttpStatus.BAD_REQUEST.value())
-	            .error(HttpStatus.BAD_REQUEST.name())
-	            .message("Validation failed for request")
-	            .localDateTime(LocalDateTime.now())
-	            .fieldErrors(fieldErrors)
-	            .build();
+		ApiError apiError = ApiError.builder().status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.name()).message("Validation failed for request")
+				.localDateTime(LocalDateTime.now()).fieldErrors(fieldErrors).build();
 
-	    return ResponseEntity
-	            .status(HttpStatus.BAD_REQUEST)
-	            .body(apiError);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
 	}
-	
+
 	@ExceptionHandler(UpdateRequestBodyValidationException.class)
-	public ResponseEntity<ApiError> handleUpdateValidationException(UpdateRequestBodyValidationException e){
+	public ResponseEntity<ApiError> handleUpdateValidationException(UpdateRequestBodyValidationException e) {
 
-	    ApiError apiError = ApiError.builder()
-	            .status(HttpStatus.BAD_REQUEST.value())
-	            .error(HttpStatus.BAD_REQUEST.name())
-	            .message(e.getMessage())
-	            .localDateTime(LocalDateTime.now())
-	            .build();
+		ApiError apiError = ApiError.builder().status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.name()).message(e.getMessage()).localDateTime(LocalDateTime.now())
+				.build();
 
-	    return ResponseEntity
-	            .status(HttpStatus.BAD_REQUEST)
-	            .body(apiError);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
 	}
 
-	
 	@ExceptionHandler(InsufficientBalanceException.class)
-	public ResponseEntity<ApiError> handleInsufficientBalanceException(InsufficientBalanceException e){
+	public ResponseEntity<ApiError> handleInsufficientBalanceException(InsufficientBalanceException e) {
 
-	    ApiError apiError = ApiError.builder()
-	            .status(HttpStatus.BAD_REQUEST.value())
-	            .error(HttpStatus.BAD_REQUEST.name())
-	            .message(e.getMessage())
-	            .localDateTime(LocalDateTime.now())
-	            .build();
+		ApiError apiError = ApiError.builder().status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.name()).message(e.getMessage()).localDateTime(LocalDateTime.now())
+				.build();
 
-	    return ResponseEntity
-	            .status(HttpStatus.BAD_REQUEST)
-	            .body(apiError);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
 	}
-	
+
 	@ExceptionHandler(TransactionNotFoundException.class)
-	public ResponseEntity<ApiError> handleTransactionNotFoundException(TransactionNotFoundException e){
+	public ResponseEntity<ApiError> handleTransactionNotFoundException(TransactionNotFoundException e) {
 
-	    ApiError apiError = ApiError.builder()
-	            .status(HttpStatus.BAD_REQUEST.value())
-	            .error(HttpStatus.BAD_REQUEST.name())
-	            .message(e.getMessage())
-	            .localDateTime(LocalDateTime.now())
-	            .build();
+		ApiError apiError = ApiError.builder().status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.name()).message(e.getMessage()).localDateTime(LocalDateTime.now())
+				.build();
 
-	    return ResponseEntity
-	            .status(HttpStatus.BAD_REQUEST)
-	            .body(apiError);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
 	}
 
 	@ExceptionHandler(InvalidCredentialsException.class)
-	public ResponseEntity<ApiError> handleInvalidCredentialsException(InvalidCredentialsException e){
+	public ResponseEntity<ApiError> handleInvalidCredentialsException(InvalidCredentialsException e) {
 
-	    ApiError apiError = ApiError.builder()
-	            .status(HttpStatus.UNAUTHORIZED.value())
-	            .error(HttpStatus.UNAUTHORIZED.name())
-	            .message(e.getMessage())
-	            .localDateTime(LocalDateTime.now())
-	            .build();
+		ApiError apiError = ApiError.builder().status(HttpStatus.UNAUTHORIZED.value())
+				.error(HttpStatus.UNAUTHORIZED.name()).message(e.getMessage()).localDateTime(LocalDateTime.now())
+				.build();
 
-	    return ResponseEntity
-	            .status(HttpStatus.UNAUTHORIZED)
-	            .body(apiError);
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
 	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ApiError> handleDuplicateEntry(DataIntegrityViolationException ex) {
+
+		String message = " value";
+		String field = null;
+
+		Throwable rootCause = ex;
+
+		while (rootCause.getCause() != null) {
+			rootCause = rootCause.getCause();
+		}
+
+		if (rootCause instanceof SQLException sqlEx) {
+
+			String sqlMessage = sqlEx.getMessage();
+
+			if (sqlMessage != null) {
+
+				if (sqlMessage.contains("Data too long")) {
+		            field = "aadharNumber";
+		            message = "Aadhar number too long";
+		        }
+				
+				if (sqlMessage.contains("uk_pan")) {
+					field = "panNumber";
+					message = "PAN already exists";
+				} else if (sqlMessage.contains("uk_aadhar")) {
+					field = "aadharNumber";
+					message = "Aadhar already exists";
+				} else if (sqlMessage.contains("uk_email")) {
+					field = "email";
+					message = "Email already exists";
+				} else if (sqlMessage.contains("uk_account_number")) {
+					field = "accountNumber";
+					message = "Account number already exists";
+				}
+			}
+		}
+
+		Map<String, String> fieldErrors = new HashMap<>();
+
+		if (field != null) {
+			fieldErrors.put(field, message);
+		}
+
+		ApiError apiError = ApiError.builder().status(HttpStatus.CONFLICT.value()).error(HttpStatus.CONFLICT.name())
+				.message(message).localDateTime(LocalDateTime.now()).fieldErrors(fieldErrors).build();
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
+	}
+
 }

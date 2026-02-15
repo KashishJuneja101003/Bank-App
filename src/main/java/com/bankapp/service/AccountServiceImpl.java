@@ -108,6 +108,8 @@ public class AccountServiceImpl implements AccountService {
 	public AccountResponseDto addUser(CreateAccountRequestDto bankAccountUser) {
 
 		Account account = newAccountBuilder.toAccount(bankAccountUser);
+		System.out.println("Aadhar RAW: [" + bankAccountUser.getAadharNumber() + "]");
+		System.out.println("Length: " + bankAccountUser.getAadharNumber().length());
 		accountRepository.save(account);
 
 		return builder.toDto(account);

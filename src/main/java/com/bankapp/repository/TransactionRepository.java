@@ -12,7 +12,7 @@ import com.bankapp.enums.TransactionApprovalStatus;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, String> {
 	
-	public List<Transaction> findByAccount(Account account);
+	public List<Transaction> findByAccountOrderByTimestampDesc(Account account);
 	
 	List<Transaction> findByTransactionApprovalStatus(TransactionApprovalStatus status);
 }
